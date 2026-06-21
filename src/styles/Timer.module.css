@@ -1,0 +1,380 @@
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dark .card {
+  background: #252542;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.workMode {
+  border-top: 4px solid #e74c3c;
+}
+
+.shortBreakMode {
+  border-top: 4px solid #3498db;
+}
+
+.longBreakMode {
+  border-top: 4px solid #2ecc71;
+}
+
+.modeSelector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.modeBtn {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.dark .modeBtn {
+  background: #3a3a5c;
+  color: #aaa;
+}
+
+.modeBtn:hover {
+  background: #e0e0e0;
+}
+
+.dark .modeBtn:hover {
+  background: #4a4a6c;
+}
+
+.modeBtn.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.workMode .modeBtn.active {
+  background: #e74c3c;
+}
+
+.shortBreakMode .modeBtn.active {
+  background: #3498db;
+}
+
+.longBreakMode .modeBtn.active {
+  background: #2ecc71;
+}
+
+.timerDisplay {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.timerCircle {
+  position: relative;
+  width: 280px;
+  height: 280px;
+}
+
+.progressRing {
+  width: 100%;
+  height: 100%;
+}
+
+.progressRingBg {
+  stroke: #e0e0e0;
+}
+
+.dark .progressRingBg {
+  stroke: #3a3a5c;
+}
+
+.progressRingCircle {
+  stroke: #e74c3c;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.workMode .progressRingCircle {
+  stroke: #e74c3c;
+}
+
+.shortBreakMode .progressRingCircle {
+  stroke: #3498db;
+}
+
+.longBreakMode .progressRingCircle {
+  stroke: #2ecc71;
+}
+
+.timeText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.modeLabel {
+  display: block;
+  font-size: 1rem;
+  color: #999;
+  margin-bottom: 0.5rem;
+}
+
+.dark .modeLabel {
+  color: #888;
+}
+
+.time {
+  display: block;
+  font-size: 4rem;
+  font-weight: 300;
+  color: #333;
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .time {
+  color: #eaeaea;
+}
+
+.taskSelector {
+  margin-bottom: 1.5rem;
+}
+
+.taskSelect {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: white;
+  color: #333;
+  transition: border-color 0.2s ease;
+}
+
+.dark .taskSelect {
+  background: #3a3a5c;
+  border-color: #4a4a6c;
+  color: #eaeaea;
+}
+
+.taskSelect:focus {
+  outline: none;
+  border-color: #e74c3c;
+}
+
+.taskSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.controlBtn {
+  padding: 0.75rem 2rem;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 25px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.dark .controlBtn {
+  background: #3a3a5c;
+  border-color: #4a4a6c;
+  color: #eaeaea;
+}
+
+.controlBtn:hover {
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+
+.primaryBtn {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  color: white;
+}
+
+.workMode .primaryBtn {
+  background: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.shortBreakMode .primaryBtn {
+  background: #3498db;
+  border-color: #3498db;
+}
+
+.longBreakMode .primaryBtn {
+  background: #2ecc71;
+  border-color: #2ecc71;
+}
+
+.primaryBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.statsBar {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.dark .statsBar {
+  border-top-color: #3a3a5c;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e74c3c;
+}
+
+.workMode .statValue {
+  color: #e74c3c;
+}
+
+.shortBreakMode .statValue {
+  color: #3498db;
+}
+
+.longBreakMode .statValue {
+  color: #2ecc71;
+}
+
+.statLabel {
+  display: block;
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.dark .statLabel {
+  color: #888;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.dark .modal {
+  background: #252542;
+  color: #eaeaea;
+}
+
+.modal h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+}
+
+.settingsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.settingsGroup label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.dark .settingsGroup label {
+  color: #aaa;
+}
+
+.settingsGroup input {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  color: #333;
+}
+
+.dark .settingsGroup input {
+  background: #3a3a5c;
+  border-color: #4a4a6c;
+  color: #eaeaea;
+}
+
+.settingsGroup input:focus {
+  outline: none;
+  border-color: #e74c3c;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.modalActions button {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.dark .modalActions button {
+  background: #3a3a5c;
+  border-color: #4a4a6c;
+  color: #eaeaea;
+}
+
+.modalActions .primaryBtn {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  color: white;
+}

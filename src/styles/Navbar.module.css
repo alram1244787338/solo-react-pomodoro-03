@@ -1,0 +1,134 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.navbar.dark {
+  background: rgba(26, 26, 46, 0.95);
+  border-bottom-color: #3a3a5c;
+}
+
+.navContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoIcon {
+  font-size: 1.75rem;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.dark .logoText {
+  color: #eaeaea;
+}
+
+.navLinks {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.dark .navBtn {
+  color: #aaa;
+}
+
+.navBtn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.dark .navBtn:hover {
+  background: #3a3a5c;
+  color: #eaeaea;
+}
+
+.navBtn.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.navBtn.active:hover {
+  background: #c0392b;
+  color: white;
+}
+
+.navIcon {
+  font-size: 1.1rem;
+}
+
+.navLabel {
+  font-weight: 500;
+}
+
+.themeBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.dark .themeBtn {
+  background: #3a3a5c;
+}
+
+.themeBtn:hover {
+  transform: rotate(15deg) scale(1.1);
+  background: #e0e0e0;
+}
+
+.dark .themeBtn:hover {
+  background: #4a4a6c;
+}
+
+@media (max-width: 600px) {
+  .navLabel {
+    display: none;
+  }
+
+  .navBtn {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .logoText {
+    display: none;
+  }
+}

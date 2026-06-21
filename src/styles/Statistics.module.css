@@ -1,0 +1,172 @@
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.dark .card {
+  background: #252542;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.dark .header h2 {
+  color: #eaeaea;
+}
+
+.viewToggle {
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 4px;
+}
+
+.dark .viewToggle {
+  background: #3a3a5c;
+}
+
+.toggleBtn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 0.9rem;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.dark .toggleBtn {
+  color: #aaa;
+}
+
+.toggleBtn.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.dark .statCard {
+  background: linear-gradient(135deg, #3a3a5c, #2d2d4a);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  font-size: 2rem;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.dark .statLabel {
+  color: #aaa;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.dark .summaryRow {
+  background: #3a3a5c;
+}
+
+.summaryItem {
+  text-align: center;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: 0.8rem;
+  color: #999;
+  margin-bottom: 0.25rem;
+}
+
+.dark .summaryLabel {
+  color: #888;
+}
+
+.summaryValue {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.dark .summaryValue {
+  color: #eaeaea;
+}
+
+.chartContainer {
+  margin-bottom: 2rem;
+}
+
+.chartTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.dark .chartTitle {
+  color: #eaeaea;
+}
+
+.chartCanvas {
+  width: 100%;
+  height: 250px;
+  display: block;
+}
