@@ -10,23 +10,20 @@ function App() {
   const [currentPage, setCurrentPage] = useState('timer');
   const { theme } = useTheme();
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'timer':
-        return <Timer />;
-      case 'tasks':
-        return <TaskList />;
-      case 'stats':
-        return <Statistics />;
-      default:
-        return <Timer />;
-    }
-  };
-
   return (
     <div className={`${styles.app} ${theme === 'dark' ? styles.dark : styles.light}`}>
       <Navbar currentPage={currentPage} onNavigate={setCurrentPage} />
-      <main className={styles.main}>{renderPage()}</main>
+      <main className={styles.main}>
+        <div className={currentPage === 'timer' ? '' : styles.hiddenPage}>
+          <Timer isActive={currentPage === 'timer'} />
+        </div>
+        <div className={currentPage === 'tasks' ? '' : styles.hiddenPage}>
+          <TaskList />
+        </div>
+        <div className={currentPage === 'stats' ? '' : styles.hiddenPage}>
+          <Statistics />
+        </div>
+      </main>
     </div>
   );
 }

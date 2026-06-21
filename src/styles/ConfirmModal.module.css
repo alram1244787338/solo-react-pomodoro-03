@@ -9,7 +9,11 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.2s ease both;
+}
+
+.modalOverlay.closing {
+  animation: fadeOut 0.25s ease both;
 }
 
 @keyframes fadeIn {
@@ -21,6 +25,15 @@
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .modal {
   background: white;
   border-radius: 15px;
@@ -28,7 +41,11 @@
   max-width: 380px;
   width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.25s ease;
+  animation: slideUp 0.25s ease both;
+}
+
+.modal.closing {
+  animation: slideDown 0.25s ease both;
 }
 
 .modal.dark {
@@ -44,6 +61,17 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
   }
 }
 
@@ -91,9 +119,15 @@
   color: #eaeaea;
 }
 
-.cancelBtn:hover {
+.cancelBtn:hover:not(:disabled) {
   border-color: #ccc;
   transform: translateY(-1px);
+}
+
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .confirmBtn {
@@ -107,8 +141,14 @@
   transition: all 0.2s ease;
 }
 
-.confirmBtn:hover {
+.confirmBtn:hover:not(:disabled) {
   background: #c0392b;
   border-color: #c0392b;
   transform: translateY(-1px);
+}
+
+.confirmBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }

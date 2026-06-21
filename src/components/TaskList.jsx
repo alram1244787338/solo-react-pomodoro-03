@@ -7,6 +7,7 @@ import {
   getTodayDateString,
   completeTask,
   uncompleteTask,
+  isToday,
 } from '../utils/storage';
 import ConfirmModal from './ConfirmModal';
 import styles from '../styles/TaskList.module.css';
@@ -67,7 +68,7 @@ function TaskList() {
 
     if (isCompleted && !wasCompleted) {
       completeTask();
-    } else if (!isCompleted && wasCompleted) {
+    } else if (!isCompleted && wasCompleted && isToday(task.completedAt)) {
       uncompleteTask();
     }
     loadTodayStats();
@@ -95,7 +96,7 @@ function TaskList() {
       title: '确认删除任务',
       message: '确定要删除这个任务吗？此操作无法撤销。',
       onConfirm: () => {
-        if (task.completed) {
+        if (task.completed && isToday(task.completedAt)) {
           uncompleteTask();
           loadTodayStats();
         }
@@ -113,8 +114,8 @@ function TaskList() {
       title: '清除已完成任务',
       message: '确定要清除所有已完成的任务吗？',
       onConfirm: () => {
-        const completedCount = tasks.filter((t) => t.completed).length;
-        for (let i = 0; i < completedCount; i++) {
+        const todayCompletedCount = tasks.filter((t) => t.completed && isToday(t.completedAt)).length;
+        for (let i = 0; i < todayCompletedCount; i++) {
           uncompleteTask();
         }
         loadTodayStats();

@@ -12,8 +12,13 @@ const TIMER_MODES = {
   LONG_BREAK: 'longBreak',
 };
 
-function Timer() {
+function Timer({ isActive = true }) {
   const { theme } = useTheme();
+  const isActiveRef = useRef(isActive);
+
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
   const [settings, setSettings] = useState(() => getSettings());
   const [mode, setMode] = useState(TIMER_MODES.WORK);
   const [timeLeft, setTimeLeft] = useState(settings.workTime * 60);
@@ -95,7 +100,10 @@ function Timer() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+      if (!isActiveRef.current) return;
+
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || e.target.isContentEditable) {
         return;
       }
 
@@ -110,7 +118,7 @@ function Timer() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [toggleTimer, resetTimer]);
 
   const loadTasks = useCallback(() => {
     const allTasks = getTasks();

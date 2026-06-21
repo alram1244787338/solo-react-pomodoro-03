@@ -42,6 +42,21 @@ export function getTodayDateString() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+export function isToday(isoDateString) {
+  if (!isoDateString) return false;
+  try {
+    const date = new Date(isoDateString);
+    const today = new Date();
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
 export function addFocusSession(minutes, taskId) {
   const stats = getStats();
   const today = getTodayDateString();
