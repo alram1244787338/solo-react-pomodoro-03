@@ -1,7 +1,31 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { getStats, getTodayDateString } from '../utils/storage';
 import styles from '../styles/Statistics.module.css';
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, radius);
+    return;
+  }
+
+  if (typeof radius === 'number') {
+    radius = { tl: radius, tr: radius, br: radius, bl: radius };
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(x + radius.tl, y);
+  ctx.lineTo(x + width - radius.tr, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+  ctx.lineTo(x + width, y + height - radius.br);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+  ctx.lineTo(x + radius.bl, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+  ctx.lineTo(x, y + radius.tl);
+  ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+  ctx.closePath();
+}
 
 function Statistics() {
   const { theme } = useTheme();
@@ -9,9 +33,34 @@ function Statistics() {
   const [stats, setStats] = useState({});
   const barCanvasRef = useRef(null);
   const lineCanvasRef = useRef(null);
+  const resizeTimerRef = useRef(null);
 
   useEffect(() => {
     setStats(getStats());
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current);
+      }
+      resizeTimerRef.current = setTimeout(() => {
+        if (barCanvasRef.current) {
+          drawBarChart();
+        }
+        if (lineCanvasRef.current) {
+          drawLineChart();
+        }
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -23,7 +72,7 @@ function Statistics() {
     }
   }, [stats, viewMode, theme]);
 
-  const getChartData = () => {
+  const getChartData = useCallback(() => {
     const data = [];
     const today = new Date();
 
@@ -44,8 +93,6 @@ function Statistics() {
       for (let i = 3; i >= 0; i--) {
         const weekStart = new Date(today);
         weekStart.setDate(weekStart.getDate() - i * 7 - today.getDay());
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
 
         let totalMinutes = 0;
         let totalSessions = 0;
@@ -71,7 +118,7 @@ function Statistics() {
     }
 
     return data;
-  };
+  }, [viewMode, stats]);
 
   const getWeekNumber = (date) => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
@@ -79,7 +126,7 @@ function Statistics() {
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   };
 
-  const getColors = () => {
+  const getColors = useCallback(() => {
     if (theme === 'dark') {
       return {
         background: '#252542',
@@ -102,9 +149,9 @@ function Statistics() {
       lineGradient: ['#3498db', '#5dade2'],
       point: '#2ecc71',
     };
-  };
+  }, [theme]);
 
-  const drawBarChart = () => {
+  const drawBarChart = useCallback(() => {
     const canvas = barCanvasRef.current;
     if (!canvas) return;
 
@@ -156,8 +203,7 @@ function Statistics() {
       gradient.addColorStop(1, colors.barGradient[1]);
 
       ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.roundRect(x, y, barWidth, barHeight, 4);
+      drawRoundedRect(ctx, x, y, barWidth, barHeight, 4);
       ctx.fill();
 
       ctx.fillStyle = colors.text;
@@ -176,9 +222,9 @@ function Statistics() {
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('专注时长（分钟）', width / 2, 18);
-  };
+  }, [getChartData, getColors]);
 
-  const drawLineChart = () => {
+  const drawLineChart = useCallback(() => {
     const canvas = lineCanvasRef.current;
     if (!canvas) return;
 
@@ -291,7 +337,7 @@ function Statistics() {
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('完成番茄数', width / 2, 18);
-  };
+  }, [getChartData, getColors]);
 
   const calculateTotals = () => {
     const data = getChartData();

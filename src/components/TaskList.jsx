@@ -1,6 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { getTasks, saveTasks, getStats, getTodayDateString, saveStats } from '../utils/storage';
+import {
+  getTasks,
+  saveTasks,
+  getStats,
+  getTodayDateString,
+  completeTask,
+  uncompleteTask,
+} from '../utils/storage';
+import ConfirmModal from './ConfirmModal';
 import styles from '../styles/TaskList.module.css';
 
 function TaskList() {
@@ -9,21 +17,27 @@ function TaskList() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [filter, setFilter] = useState('all');
   const [todayCompleted, setTodayCompleted] = useState(0);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+  });
 
   useEffect(() => {
     loadTasks();
     loadTodayStats();
   }, []);
 
-  const loadTasks = () => {
+  const loadTasks = useCallback(() => {
     setTasks(getTasks());
-  };
+  }, []);
 
-  const loadTodayStats = () => {
+  const loadTodayStats = useCallback(() => {
     const stats = getStats();
     const today = getTodayDateString();
     setTodayCompleted(stats[today]?.completedTasks || 0);
-  };
+  }, []);
 
   const addTask = (e) => {
     e.preventDefault();
@@ -45,67 +59,71 @@ function TaskList() {
   };
 
   const toggleTask = (taskId) => {
-    const updatedTasks = tasks.map((task) => {
-      if (task.id === taskId) {
-        const wasCompleted = task.completed;
-        const isCompleted = !wasCompleted;
-
-        if (isCompleted && !wasCompleted) {
-          const stats = getStats();
-          const today = getTodayDateString();
-          if (!stats[today]) {
-            stats[today] = { focusMinutes: 0, completedTasks: 0, sessions: 0 };
-          }
-          stats[today].completedTasks += 1;
-          saveStats(stats);
-          loadTodayStats();
-        } else if (!isCompleted && wasCompleted) {
-          const stats = getStats();
-          const today = getTodayDateString();
-          if (stats[today] && stats[today].completedTasks > 0) {
-            stats[today].completedTasks -= 1;
-            saveStats(stats);
-            loadTodayStats();
-          }
-        }
-
-        return {
-          ...task,
-          completed: isCompleted,
-          completedAt: isCompleted ? new Date().toISOString() : null,
-        };
-      }
-      return task;
-    });
-
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
-  };
-
-  const deleteTask = (taskId) => {
-    if (!confirm('确定要删除这个任务吗？')) return;
-
     const task = tasks.find((t) => t.id === taskId);
-    if (task && task.completed) {
-      const stats = getStats();
-      const today = getTodayDateString();
-      if (stats[today] && stats[today].completedTasks > 0) {
-        stats[today].completedTasks -= 1;
-        saveStats(stats);
-        loadTodayStats();
-      }
-    }
+    if (!task) return;
 
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    const wasCompleted = task.completed;
+    const isCompleted = !wasCompleted;
+
+    if (isCompleted && !wasCompleted) {
+      completeTask();
+    } else if (!isCompleted && wasCompleted) {
+      uncompleteTask();
+    }
+    loadTodayStats();
+
+    const updatedTasks = tasks.map((t) =>
+      t.id === taskId
+        ? {
+            ...t,
+            completed: isCompleted,
+            completedAt: isCompleted ? new Date().toISOString() : null,
+          }
+        : t
+    );
+
     setTasks(updatedTasks);
     saveTasks(updatedTasks);
   };
 
-  const clearCompleted = () => {
-    if (!confirm('确定要清除所有已完成的任务吗？')) return;
-    const updatedTasks = tasks.filter((task) => !task.completed);
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
+  const handleDeleteTask = (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    setConfirmModal({
+      isOpen: true,
+      title: '确认删除任务',
+      message: '确定要删除这个任务吗？此操作无法撤销。',
+      onConfirm: () => {
+        if (task.completed) {
+          uncompleteTask();
+          loadTodayStats();
+        }
+        const updatedTasks = tasks.filter((t) => t.id !== taskId);
+        setTasks(updatedTasks);
+        saveTasks(updatedTasks);
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+      },
+    });
+  };
+
+  const handleClearCompleted = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: '清除已完成任务',
+      message: '确定要清除所有已完成的任务吗？',
+      onConfirm: () => {
+        const completedCount = tasks.filter((t) => t.completed).length;
+        for (let i = 0; i < completedCount; i++) {
+          uncompleteTask();
+        }
+        loadTodayStats();
+        const updatedTasks = tasks.filter((t) => !t.completed);
+        setTasks(updatedTasks);
+        saveTasks(updatedTasks);
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+      },
+    });
   };
 
   const filteredTasks = () => {
@@ -197,7 +215,7 @@ function TaskList() {
                 </div>
                 <button
                   className={styles.deleteBtn}
-                  onClick={() => deleteTask(task.id)}
+                  onClick={() => handleDeleteTask(task.id)}
                   title="删除任务"
                 >
                   ×
@@ -209,12 +227,22 @@ function TaskList() {
 
         {completedCount > 0 && (
           <div className={styles.footer}>
-            <button className={styles.clearBtn} onClick={clearCompleted}>
+            <button className={styles.clearBtn} onClick={handleClearCompleted}>
               清除已完成
             </button>
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null })}
+        confirmText="确认"
+        cancelText="取消"
+      />
     </div>
   );
 }

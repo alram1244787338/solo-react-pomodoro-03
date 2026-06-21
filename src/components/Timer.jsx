@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { getSettings, saveSettings, addFocusSession, getTodayDateString, getStats } from '../utils/storage';
 import { requestNotificationPermission, sendNotification, playCompletionSound } from '../utils/notification';
 import { getTasks } from '../utils/storage';
+import ConfirmModal from './ConfirmModal';
 import styles from '../styles/Timer.module.css';
 
 const TIMER_MODES = {
@@ -23,7 +24,34 @@ function Timer() {
   const [showSettings, setShowSettings] = useState(false);
   const [tempSettings, setTempSettings] = useState(settings);
   const [todayStats, setTodayStats] = useState({ focusMinutes: 0, completedTasks: 0, sessions: 0 });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+  });
+
   const intervalRef = useRef(null);
+  const modeRef = useRef(mode);
+  const completedPomodorosRef = useRef(completedPomodoros);
+  const settingsRef = useRef(settings);
+  const selectedTaskIdRef = useRef(selectedTaskId);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  useEffect(() => {
+    completedPomodorosRef.current = completedPomodoros;
+  }, [completedPomodoros]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  useEffect(() => {
+    selectedTaskIdRef.current = selectedTaskId;
+  }, [selectedTaskId]);
 
   useEffect(() => {
     requestNotificationPermission();
@@ -43,47 +71,79 @@ function Timer() {
   }, [mode, settings, isRunning]);
 
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
+    if (isRunning) {
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setTimeout(() => handleTimerComplete(), 0);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0) {
-      handleTimerComplete();
     }
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [isRunning, timeLeft]);
+  }, [isRunning]);
 
-  const loadTasks = () => {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        return;
+      }
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleTimer();
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        resetTimer();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const loadTasks = useCallback(() => {
     const allTasks = getTasks();
     const activeTasks = allTasks.filter((t) => !t.completed);
     setTasks(activeTasks);
-  };
+  }, []);
 
-  const loadTodayStats = () => {
+  const loadTodayStats = useCallback(() => {
     const stats = getStats();
     const today = getTodayDateString();
     setTodayStats(stats[today] || { focusMinutes: 0, completedTasks: 0, sessions: 0 });
-  };
+  }, []);
 
-  const handleTimerComplete = () => {
+  const handleTimerComplete = useCallback(() => {
     setIsRunning(false);
     playCompletionSound();
 
-    if (mode === TIMER_MODES.WORK) {
-      addFocusSession(settings.workTime, selectedTaskId);
-      const newCount = completedPomodoros + 1;
+    const currentMode = modeRef.current;
+    const currentSettings = settingsRef.current;
+    const currentTaskId = selectedTaskIdRef.current;
+    const currentPomodoros = completedPomodorosRef.current;
+
+    if (currentMode === TIMER_MODES.WORK) {
+      addFocusSession(currentSettings.workTime, currentTaskId);
+      const newCount = currentPomodoros + 1;
       setCompletedPomodoros(newCount);
+      completedPomodorosRef.current = newCount;
       loadTodayStats();
       loadTasks();
 
       sendNotification('🍅 工作时间结束！', '休息一下吧，你做得很棒！');
 
-      if (newCount % settings.longBreakInterval === 0) {
+      if (newCount % currentSettings.longBreakInterval === 0) {
         setMode(TIMER_MODES.LONG_BREAK);
       } else {
         setMode(TIMER_MODES.SHORT_BREAK);
@@ -92,31 +152,47 @@ function Timer() {
       sendNotification('☕ 休息结束！', '准备好开始下一个番茄钟了吗？');
       setMode(TIMER_MODES.WORK);
     }
-  };
 
-  const toggleTimer = () => {
-    setIsRunning(!isRunning);
-  };
+    if (currentSettings.autoStartNext) {
+      setTimeout(() => {
+        setIsRunning(true);
+      }, 500);
+    }
+  }, [loadTodayStats, loadTasks]);
 
-  const resetTimer = () => {
+  const toggleTimer = useCallback(() => {
+    setIsRunning((prev) => !prev);
+  }, []);
+
+  const resetTimer = useCallback(() => {
     setIsRunning(false);
+    const currentMode = modeRef.current;
+    const currentSettings = settingsRef.current;
     const modeTime = {
-      [TIMER_MODES.WORK]: settings.workTime * 60,
-      [TIMER_MODES.SHORT_BREAK]: settings.shortBreak * 60,
-      [TIMER_MODES.LONG_BREAK]: settings.longBreak * 60,
+      [TIMER_MODES.WORK]: currentSettings.workTime * 60,
+      [TIMER_MODES.SHORT_BREAK]: currentSettings.shortBreak * 60,
+      [TIMER_MODES.LONG_BREAK]: currentSettings.longBreak * 60,
     };
-    setTimeLeft(modeTime[mode]);
-  };
+    setTimeLeft(modeTime[currentMode]);
+  }, []);
 
-  const switchMode = (newMode) => {
+  const switchMode = useCallback((newMode) => {
     if (isRunning) {
-      if (!confirm('计时器正在运行，确定要切换模式吗？')) {
-        return;
-      }
+      setConfirmModal({
+        isOpen: true,
+        title: '确认切换模式',
+        message: '计时器正在运行，确定要切换模式吗？当前进度将丢失。',
+        onConfirm: () => {
+          setIsRunning(false);
+          setMode(newMode);
+          setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+        },
+      });
+      return;
     }
     setIsRunning(false);
     setMode(newMode);
-  };
+  }, [isRunning]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -149,6 +225,7 @@ function Timer() {
   const handleSaveSettings = () => {
     setSettings(tempSettings);
     saveSettings(tempSettings);
+    settingsRef.current = tempSettings;
     setShowSettings(false);
     setTimeLeft(tempSettings.workTime * 60);
   };
@@ -231,10 +308,10 @@ function Timer() {
 
         <div className={styles.controls}>
           <button className={styles.controlBtn} onClick={resetTimer}>
-            重置
+            重置 (R)
           </button>
           <button className={`${styles.controlBtn} ${styles.primaryBtn}`} onClick={toggleTimer}>
-            {isRunning ? '暂停' : '开始'}
+            {isRunning ? '暂停 (空格)' : '开始 (空格)'}
           </button>
           <button className={styles.controlBtn} onClick={() => setShowSettings(true)}>
             设置
@@ -302,6 +379,20 @@ function Timer() {
                   onChange={(e) => setTempSettings({ ...tempSettings, longBreakInterval: parseInt(e.target.value) || 4 })}
                 />
               </label>
+              <label className={styles.toggleLabel}>
+                <div className={styles.toggleText}>
+                  <span>自动开始下一轮</span>
+                  <span className={styles.toggleHint}>计时结束后自动进入下一阶段</span>
+                </div>
+                <div className={styles.toggleSwitch}>
+                  <input
+                    type="checkbox"
+                    checked={!!tempSettings.autoStartNext}
+                    onChange={(e) => setTempSettings({ ...tempSettings, autoStartNext: e.target.checked })}
+                  />
+                  <span className={`${styles.toggleSlider} ${tempSettings.autoStartNext ? styles.checked : ''}`}></span>
+                </div>
+              </label>
             </div>
             <div className={styles.modalActions}>
               <button onClick={() => setShowSettings(false)}>取消</button>
@@ -312,6 +403,16 @@ function Timer() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null })}
+        confirmText="确认"
+        cancelText="取消"
+      />
     </div>
   );
 }

@@ -29,6 +29,7 @@ export function getSettings() {
         shortBreak: 5,
         longBreak: 15,
         longBreakInterval: 4,
+        autoStartNext: false,
       };
 }
 
@@ -66,5 +67,34 @@ export function addFocusSession(minutes, taskId) {
   }
 
   saveStats(stats);
+  return stats;
+}
+
+export function completeTask() {
+  const stats = getStats();
+  const today = getTodayDateString();
+
+  if (!stats[today]) {
+    stats[today] = {
+      focusMinutes: 0,
+      completedTasks: 0,
+      sessions: 0,
+    };
+  }
+
+  stats[today].completedTasks += 1;
+  saveStats(stats);
+  return stats;
+}
+
+export function uncompleteTask() {
+  const stats = getStats();
+  const today = getTodayDateString();
+
+  if (stats[today] && stats[today].completedTasks > 0) {
+    stats[today].completedTasks -= 1;
+    saveStats(stats);
+  }
+
   return stats;
 }
