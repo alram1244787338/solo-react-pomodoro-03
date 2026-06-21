@@ -73,7 +73,7 @@ function Timer({ isActive = true }) {
     if (!isRunning) {
       setTimeLeft(modeTime[mode]);
     }
-  }, [mode, settings, isRunning]);
+  }, [mode, settings]);
 
   useEffect(() => {
     if (isRunning) {
